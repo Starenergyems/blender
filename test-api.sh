@@ -161,6 +161,40 @@ run_test "Create collect data with missing required fields" \
         }]
     }' | json_pp"
 
+run_test "Create collect data with invalid attribute ID" \
+    "curl -s -X POST '${BASE_URL}/api/collect' \
+    -H 'Content-Type: application/json' \
+    -d '{
+        \"cycle\": 2,
+        \"resources\": [{
+            \"resourceId\": \"resource1\",
+            \"attributes\": [{
+                \"attribute\": \"999999\",
+                \"values\": [{
+                    \"datetime\": \"2024-02-25T00:00:00+09:00\",
+                    \"value\": \"123.45\"
+                }]
+            }]
+        }]
+    }' | json_pp"
+
+run_test "Create collect data with non-numeric attribute ID" \
+    "curl -s -X POST '${BASE_URL}/api/collect' \
+    -H 'Content-Type: application/json' \
+    -d '{
+        \"cycle\": 2,
+        \"resources\": [{
+            \"resourceId\": \"resource1\",
+            \"attributes\": [{
+                \"attribute\": \"ABC123\",
+                \"values\": [{
+                    \"datetime\": \"2024-02-25T00:00:00+09:00\",
+                    \"value\": \"123.45\"
+                }]
+            }]
+        }]
+    }' | json_pp"
+
 run_test "Create collect data with future date beyond limit" \
     "curl -s -X POST '${BASE_URL}/api/collect' \
     -H 'Content-Type: application/json' \

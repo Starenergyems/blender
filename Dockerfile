@@ -8,8 +8,8 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy source code
-COPY . .
+# Copy source code and parameter definitions
+COPY src/ ./src/
 
 # Expose port
 EXPOSE 3000

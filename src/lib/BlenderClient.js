@@ -1,6 +1,16 @@
 const axios = require('axios');
 const logger = require('./logger');
 
+// Valid attribute IDs (hardcoded list)
+const VALID_ATTRIBUTE_IDS = [
+  "310001", "310002", "310003", "310004", "310005",
+  "310006", "310007", "310008", "310009", "310010",
+  "310011", "310012", "310013", "310014", "310015",
+  "310016", "310017", "310018", "310019", "310020",
+  "310021", "310022", "310023", "310024", "310025",
+  "310026", "310027", "310028", "310029", "310030"
+];
+
 class BlenderClient {
   constructor(config) {
     this.baseURL = config.baseURL || '/dep-webapi';
@@ -259,9 +269,9 @@ class BlenderClient {
       throw new Error('attribute and values array are required for each attribute');
     }
 
-    // Validate attribute format (should be a 6-digit number as string)
-    if (!/^\d{6}$/.test(attr.attribute)) {
-      throw new Error('attribute must be a 6-digit number string');
+    // Validate attribute format and value
+    if (!VALID_ATTRIBUTE_IDS.includes(attr.attribute)) {
+      throw new Error('Invalid attribute ID. Must be one of the valid IDs');
     }
 
     // Validate dataType fields if present
