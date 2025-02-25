@@ -71,8 +71,10 @@ app.get('/api/plan', async (req, res) => {
       from: req.query.from,
       to: req.query.to,
       intervalType: parseInt(req.query.intervalType),
+      resourceTypes: req.query.resourceTypes ? req.query.resourceTypes.split(',') : undefined,
       resources: req.query.resources ? req.query.resources.split(',') : undefined,
-      attributes: req.query.attributes ? req.query.attributes.split(',') : undefined
+      attributes: req.query.attributes ? req.query.attributes.split(',') : undefined,
+      tenantIds: req.query.tenantIds ? req.query.tenantIds.split(',') : undefined
     };
 
     client.validateDateRange(params.from, params.to);
@@ -80,7 +82,7 @@ app.get('/api/plan', async (req, res) => {
     res.json(data);
   } catch (error) {
     logger.error('Error in /api/plan:', error.message);
-    res.status(500).json({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 });
 
@@ -91,17 +93,23 @@ app.get('/api/collect', async (req, res) => {
       from: req.query.from,
       to: req.query.to,
       cycle: parseInt(req.query.cycle),
+      resourceTypes: req.query.resourceTypes ? req.query.resourceTypes.split(',') : undefined,
       resources: req.query.resources ? req.query.resources.split(',') : undefined,
-      attributes: req.query.attributes ? req.query.attributes.split(',') : undefined
+      attributes: req.query.attributes ? req.query.attributes.split(',') : undefined,
+      tenantIds: req.query.tenantIds ? req.query.tenantIds.split(',') : undefined,
+      dataType1: req.query.dataType1 ? parseInt(req.query.dataType1) : undefined
     };
 
     client.validateDateRange(params.from, params.to);
     client.validateCycle(params.cycle);
+    client.validateDataType1(params.dataType1);
+    client.validateCycleTimePeriod(params.cycle, params.from, params.to);
+    
     const data = await client.getCollectData(params);
     res.json(data);
   } catch (error) {
     logger.error('Error in /api/collect:', error.message);
-    res.status(500).json({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 });
 
@@ -111,7 +119,7 @@ app.post('/api/collect', async (req, res) => {
     res.json(data);
   } catch (error) {
     logger.error('Error in POST /api/collect:', error.message);
-    res.status(500).json({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 });
 
