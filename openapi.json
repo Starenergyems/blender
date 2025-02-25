@@ -1,0 +1,2490 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "version": "0.0.1-SNAPSHOT",
+      "title": "BLEnDer-DEP データ連携API",
+      "description": "DEP ⇔ 他システム間のデータ連携APIです。"
+    },
+    "servers": [
+      {
+        "url": "/dep-webapi"
+      }
+    ],
+    "security": [
+      {
+        "oAuthServicePlatformDevApi": [
+          "service-platform-api-dev-dep-resource/api.auth"
+        ]
+      },
+      {
+        "oAuthServicePlatformStgApi": [
+          "service-platform-api-stg-dep-resource/api.auth"
+        ]
+      },
+      {
+        "oAuthServicePlatformServiceApi": [
+          "service-platform-api-service-dep-resource/api.auth"
+        ]
+      }
+    ],
+    "tags": [
+      {
+        "name": "plan",
+        "description": "### 指令値API\n指令値を取得できます。\nトークン取得APIで取得したトークンをヘッダに指定します。\n"
+      },
+      {
+        "name": "collect",
+        "description": "### 実績値API\nリソースから収集したデータの取得、登録/更新ができます。  \nトークン取得APIで取得したトークンをヘッダに指定します。\n"
+      }
+    ],
+    "paths": {
+      "/data/plan": {
+        "get": {
+          "tags": [
+            "plan"
+          ],
+          "summary": "指令値取得",
+          "description": "指令値の期間や対象のリソース、属性（収集項目）を指定することで、  \n該当する指令値を取得します。  \n\nパラメータのresources(リソースID)とresourceTypes(リソース種別)は、  \nどちらも指定なしか、どちらか一方の指定ありで設定します。  \nどちらも指定がある場合は、パラメータ異常エラーとします。  \n\n指令値取得はパラメータのfrom-toで検索期間を指定しますが、  \nこの期間の上限はパラメータのintervalType（指令間隔識別子）に合わせて、以下の通り制限します。  \nなお、各期間は両端を含み、例えば、2時間の場合9:00～11:00までを許容します。\n|  intervalType(指令間隔識別子) |  期間  |\n| ---- | ---- |\n|  1(1分計画値)  |  2日  |\n|  2(30分計画値)  |  2か月 |\n|  0 (指令値) |  2日 |\n",
+          "operationId": "searchPlanData",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/Plan.Query.from"
+            },
+            {
+              "$ref": "#/components/parameters/Plan.Query.to"
+            },
+            {
+              "$ref": "#/components/parameters/Plan.Query.intervalType"
+            },
+            {
+              "$ref": "#/components/parameters/Plan.Query.resourceTypes"
+            },
+            {
+              "$ref": "#/components/parameters/Plan.Query.resources"
+            },
+            {
+              "$ref": "#/components/parameters/Plan.Query.attributes"
+            },
+            {
+              "$ref": "#/components/parameters/Plan.Query.tenantIds"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "取得結果",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/PlanData"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/ApiErrorSearchPlan"
+            },
+            "500": {
+              "$ref": "#/components/responses/UnexpectedError"
+            }
+          }
+        }
+      },
+      "/data/collect": {
+        "get": {
+          "tags": [
+            "collect"
+          ],
+          "summary": "実績値取得",
+          "description": "収集期間や対象のリソース、属性（収集項目）を指定することで、  \n該当する実績値を取得します。  \n\nパラメータのresources(リソースID)とresourceTypes(リソース種別)は、  \nどちらも指定なしか、どちらか一方の指定ありで設定します。  \nどちらも指定がある場合は、パラメータ異常エラーとします。  \n\n実績値取得はパラメータのfrom-toで検索期間を指定しますが、  \nこの期間の上限はパラメータのcycle（周期）に合わせて、以下の通り制限します。  \nなお、各期間は両端を含み、例えば、2時間の場合9:00～11:00までを許容します。\n|  cycle(周期)  |  期間  |\n| ---- | ---- |\n|  1(1秒)  |   2時間 |\n|  2(1分)  |  2日  |\n|  3(5分)  |  2日  |\n|  4(30分)  |  2か月 |\n|  5(12時間)  |  2か月  |  \n\n実績値取得のデータ区分1は、値によって以下の意味を持ちます。  \n| dataType1(データ区分1) | 意味 |\n| ---- | ---- |\n|  5  |  実績  |\n|  6  |  入手データ・システム連係値  |\n|  7  |  加工データ  |\n|  8  |  予測  |\n",
+          "operationId": "searchCollectData",
+          "parameters": [
+            {
+              "$ref": "#/components/parameters/Collect.Query.from"
+            },
+            {
+              "$ref": "#/components/parameters/Collect.Query.to"
+            },
+            {
+              "$ref": "#/components/parameters/Collect.Query.cycle"
+            },
+            {
+              "$ref": "#/components/parameters/Collect.Query.resourceTypes"
+            },
+            {
+              "$ref": "#/components/parameters/Collect.Query.resources"
+            },
+            {
+              "$ref": "#/components/parameters/Collect.Query.attributes"
+            },
+            {
+              "$ref": "#/components/parameters/Collect.Query.tenantIds"
+            },
+            {
+              "$ref": "#/components/parameters/Collect.Query.dataType1"
+            },
+            {
+              "$ref": "#/components/parameters/Collect.Query.dataType2"
+            },
+            {
+              "$ref": "#/components/parameters/Collect.Query.dataType3"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "取得結果",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CollectData"
+                  }
+                }
+              }
+            },
+            "400": {
+              "$ref": "#/components/responses/ApiErrorSearchCollect"
+            },
+            "500": {
+              "$ref": "#/components/responses/UnexpectedError"
+            }
+          }
+        },
+        "post": {
+          "tags": [
+            "collect"
+          ],
+          "summary": "実績値登録",
+          "description": "リソースの実績値を、DBに登録します。  \n実際の入力データサンプル（JSON形式）は右のRequest samplesに記載されています。  \n\nリソースID、属性、日時をキーとして、実績値が存在しなければ新規登録、存在する場合は、既存データを更新します。  \n\n実績値登録は、  \n未来のデータ→4カ月先まで  \n過去のデータ→2年前まで  \nを登録対象データとします。  \n\n実績値の登録可否は、リソース単位で行います。  \n\n|  cycle(周期)  |  期間  |\n| ---- | ---- |\n|  1(1秒)  |   2時間 |\n|  2(1分)  |  2日  |\n|  3(5分)  |  2日  |\n|  4(30分)  |  2か月 |\n|  5(12時間)  |  2か月  |  \n\n実績値登録のデータ区分1は、値によって以下の意味を持ちます。  \n| dataType1(データ区分1) | 意味 |\n| ---- | ---- |\n|  5  |  実績  |\n|  6  |  入手データ・システム連係値  |  \n|  7  |  加工データ  |\n|  8  |  予測  |\n\n※cycle、resources、resourceId、attributes、attribute、values、datetime、valueは入力必須。\nresources、attributes、valuesが空配列の場合はデータ登録件数が0件の扱いとなります。\n",
+          "operationId": "createCollectData",
+          "requestBody": {
+            "description": "登録データ",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectPayload"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "$ref": "#/components/responses/ApiSuccess"
+            },
+            "400": {
+              "$ref": "#/components/responses/ApiErrorCreateCollect"
+            },
+            "500": {
+              "$ref": "#/components/responses/UnexpectedError"
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "securitySchemes": {
+        "oAuthServicePlatformDevApi": {
+          "type": "oauth2",
+          "description": "本APIはクライアント認証フローでOAuth2.0を使用します。",
+          "flows": {
+            "clientCredentials": {
+              "tokenUrl": "https://service-platform-api-dev-dep.auth.ap-northeast-1.amazoncognito.com/oauth2/token",
+              "scopes": {
+                "service-platform-api-dev-dep-resource/api.auth": "target scope"
+              }
+            }
+          }
+        },
+        "oAuthServicePlatformStgApi": {
+          "type": "oauth2",
+          "description": "本APIはクライアント認証フローでOAuth2.0を使用します。",
+          "flows": {
+            "clientCredentials": {
+              "tokenUrl": "https://service-platform-api-stg-dep.auth.ap-northeast-1.amazoncognito.com/oauth2/token",
+              "scopes": {
+                "service-platform-api-stg-dep-resource/api.auth": "target scope"
+              }
+            }
+          }
+        },
+        "oAuthServicePlatformServiceApi": {
+          "type": "oauth2",
+          "description": "本APIはクライアント認証フローでOAuth2.0を使用します。",
+          "flows": {
+            "clientCredentials": {
+              "tokenUrl": "https://service-platform-api-service-dep.auth.ap-northeast-1.amazoncognito.com/oauth2/token",
+              "scopes": {
+                "service-platform-api-service-dep-resource/api.auth": "target scope"
+              }
+            }
+          }
+        }
+      },
+      "parameters": {
+        "Resource.Path.ResourceId": {
+          "name": "resourceId",
+          "description": "リソースID(リソースを一意に特定可能なID)を指定する。",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 14,
+            "example": "0050001"
+          }
+        },
+        "Resource.Query.resourceId": {
+          "name": "resourceId",
+          "description": "リソースID(リソースを一意に特定可能なID)を指定する。  \n省略時は全リソースのデータが取得対象となる。\n",
+          "in": "query",
+          "required": false,
+          "allowEmptyValue": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 14,
+            "example": "0050001"
+          }
+        },
+        "Resource.Query.tenantId": {
+          "name": "tenantId",
+          "description": "テナント(リソースを所有する事業者)を指定する。  \n省略時は自テナント及び子テナントのデータが取得対象となる。\n",
+          "in": "query",
+          "required": false,
+          "allowEmptyValue": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 20,
+            "example": "t0001"
+          }
+        },
+        "Resource.Query.resourceKey": {
+          "name": "resourceKey",
+          "description": "リソースキー(リソースの情報を操作するための、リソースを一意に特定可能なキー)を指定する。  \n省略時は全リソースキーのデータが取得対象となる。  \n将来機能のため利用非推奨。\n",
+          "in": "query",
+          "required": false,
+          "allowEmptyValue": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 64,
+            "example": "リソースキー"
+          }
+        },
+        "Resource.Query.resourceType": {
+          "name": "resourceType",
+          "description": "リソース種別を指定する。  \nリソース種別の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``resourceTypes``シートを参照。  \n省略時は全種別が取得対象となる。\n",
+          "in": "query",
+          "required": false,
+          "allowEmptyValue": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 2,
+            "example": "BT"
+          }
+        },
+        "Resource.Query.resourceNm": {
+          "name": "resourceNm",
+          "description": "リソース名を指定する。  \n省略時は全リソース名が取得対象となる。  \n部分一致も取得対象となる。\n",
+          "in": "query",
+          "required": false,
+          "allowEmptyValue": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 64,
+            "example": "リソース名"
+          }
+        },
+        "Resource.Query.resourceConnectCd": {
+          "name": "resourceConnectCd",
+          "description": "リソース接続コード（地点特定番号）を指定する。  \n省略時は全特定番号が取得対象となる。\n",
+          "in": "query",
+          "required": false,
+          "allowEmptyValue": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 22,
+            "example": "11223344"
+          }
+        },
+        "Resource.Query.prefectureCd": {
+          "name": "prefectureCd",
+          "description": "都道府県(リソースが存在する都道府県)を指定する。  \n都道府県の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``prefectureCd``シートを参照  \n省略時は全都道府県が取得対象となる。\n",
+          "in": "query",
+          "required": false,
+          "allowEmptyValue": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 2,
+            "example": "13"
+          }
+        },
+        "Resource.Query.weatherPointCd": {
+          "name": "weatherPointCd",
+          "description": "気象ポイントコードを指定する。  \n省略時は全気象ポイントが取得対象となる。  \n将来機能のため利用非推奨。\n",
+          "in": "query",
+          "required": false,
+          "allowEmptyValue": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 6,
+            "example": "11111"
+          }
+        },
+        "Resource.Query.parentResourceId": {
+          "name": "parentResourceId",
+          "description": "親リソースのリソースIDを指定する。  \n省略時は全親リソースが取得対象となる。\n",
+          "in": "query",
+          "required": false,
+          "allowEmptyValue": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 14,
+            "example": "0000001"
+          }
+        },
+        "Resource.Query.areaCd": {
+          "name": "areaCd",
+          "description": "電力会社エリアコードを指定する。  \n電力会社エリアコードの一覧は「EWGF-Y028-J22005_添付1_コード定義」の``areaCd``シートを参照  \n省略時は全電力会社エリアコードが取得対象となる。\n",
+          "in": "query",
+          "required": false,
+          "allowEmptyValue": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 1,
+            "example": "3"
+          }
+        },
+        "Jyuyouka.Path.JyuyoukaIdDep": {
+          "name": "jyuyoukaIdDep",
+          "description": "需要家ID(DEP)",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        "Jyuyouka.Query.jyuyoukaIdApp": {
+          "name": "jyuyoukaIdApp",
+          "description": "検索条件.需要家ID(アプリ側)",
+          "in": "query",
+          "required": false,
+          "allowEmptyValue": true,
+          "schema": {
+            "type": "string",
+            "maxLength": 10
+          }
+        },
+        "Plan.Query.from": {
+          "name": "from",
+          "in": "query",
+          "description": "抽出範囲(from)。  \n取得したい指令値の期間の始まりを指定する。  \nJSTで指定ください(ISO8601形式)\n",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2022-08-01T00:00:00+09:00"
+          }
+        },
+        "Plan.Query.to": {
+          "name": "to",
+          "in": "query",
+          "description": "抽出範囲(to)。  \n取得したい指令値の期間の終わりを指定する。  \nJSTで指定ください(ISO8601形式)\n",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2022-08-01T00:01:00+09:00"
+          }
+        },
+        "Plan.Query.resourceTypes": {
+          "name": "resourceTypes",
+          "in": "query",
+          "description": "リソース種別を指定する。  \n複数指定可能であり、省略時は全種別が取得対象となる。  \nリソース種別の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``resourceTypes``シートを参照。\n",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 2
+            },
+            "example": [
+              "BT",
+              "SM"
+            ]
+          }
+        },
+        "Plan.Query.resources": {
+          "name": "resources",
+          "in": "query",
+          "description": "リソースID(リソースを一意に特定可能なID)を指定する。  \n複数指定可能であり、省略時は全リソースのデータが取得対象となる。\n",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 14
+            },
+            "example": [
+              "B01G010011BT",
+              "B02G110049SM"
+            ]
+          }
+        },
+        "Plan.Query.attributes": {
+          "name": "attributes",
+          "in": "query",
+          "description": "属性を指定する。  \n属性の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``attributes``シートを参照。  \n複数指定可能であり、省略時は全属性のデータが取得対象となる。6桁の数字。\n",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 6
+            },
+            "example": [
+              "310003",
+              "320005"
+            ]
+          }
+        },
+        "Plan.Query.intervalType": {
+          "name": "intervalType",
+          "in": "query",
+          "description": "指令値の指令間隔識別子を指定する。  \n指令間隔識別子が、1の場合は1分、2の場合は30分の計画データを、\n0の場合は、1分の指令データが取得対象となる。\n",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "example": 2,
+            "enum": [
+              0,
+              1,
+              2
+            ]
+          }
+        },
+        "Plan.Query.tenantIds": {
+          "name": "tenantIds",
+          "in": "query",
+          "description": "テナントID(リソースを所有する事業者)を指定する。  \n複数指定可能であり、省略時は自テナント及び子テナントのデータが取得対象となる。文字列。\n",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 20
+            },
+            "example": [
+              "t0001",
+              "t0002"
+            ]
+          }
+        },
+        "Collect.Query.from": {
+          "name": "from",
+          "in": "query",
+          "description": "抽出範囲(from)。  \n取得したい収集データの期間の始まりを指定する。  \nJSTで指定ください(ISO8601形式)\n",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2022-08-01T00:00:00+09:00"
+          }
+        },
+        "Collect.Query.to": {
+          "name": "to",
+          "in": "query",
+          "description": "抽出範囲(to)。  \n取得したい収集データの期間の終わりを指定する。  \nJSTで指定ください(ISO8601形式)\n",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2022-08-01T00:30:00+09:00"
+          }
+        },
+        "Collect.Query.resourceTypes": {
+          "name": "resourceTypes",
+          "in": "query",
+          "description": "リソース種別を指定する。  \n複数指定可能であり、省略時は全種別が取得対象となる。  \nリソース種別の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``resourceTypes``シートを参照。\n",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 2
+            },
+            "example": [
+              "BT",
+              "SM"
+            ]
+          }
+        },
+        "Collect.Query.resources": {
+          "name": "resources",
+          "in": "query",
+          "description": "リソースID(リソースを一意に特定可能なID)を指定する。  \n複数指定可能であり、省略時は全リソースのデータが取得対象となる。\n",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 14
+            },
+            "example": [
+              "B01G010011BT",
+              "B02G110049SM"
+            ]
+          }
+        },
+        "Collect.Query.attributes": {
+          "name": "attributes",
+          "in": "query",
+          "description": "属性を指定する。  \n属性の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``attributes``シートを参照。  \n複数指定可能であり、省略時は全属性のデータが取得対象となる。6桁の数字。\n",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 6
+            },
+            "example": [
+              "310003",
+              "320005"
+            ]
+          }
+        },
+        "Collect.Query.cycle": {
+          "name": "cycle",
+          "in": "query",
+          "description": "収集データの周期を指定する。  \n周期の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``cycle``シートを参照。\n",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "format": "int32",
+            "example": 2,
+            "enum": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ]
+          }
+        },
+        "Collect.Query.tenantIds": {
+          "name": "tenantIds",
+          "in": "query",
+          "description": "テナントID(リソースを所有する事業者)を指定する。  \n複数指定可能であり、省略時は自テナント及び子テナントのデータが取得対象となる。文字列。\n",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 20
+            },
+            "example": [
+              "t0001",
+              "t0002"
+            ]
+          }
+        },
+        "Collect.Query.dataType1": {
+          "name": "dataType1",
+          "in": "query",
+          "description": "データ区分1を指定する。  \nデータ区分1の値一覧は「EWGF-Y028-J22005_添付1_コード定義」の``dataKbn1``シートを参照。  \n省略時は全データ区分1のデータが取得対象となる。文字列。\n",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "maxLength": 64,
+            "example": "6"
+          }
+        },
+        "Collect.Query.dataType2": {
+          "name": "dataType2",
+          "in": "query",
+          "description": "データ区分2を指定する。  \n省略時は全データ区分2のデータが取得対象となる。文字列。  \n将来機能のため利用非推奨。\n",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "maxLength": 64,
+            "example": "5"
+          }
+        },
+        "Collect.Query.dataType3": {
+          "name": "dataType3",
+          "in": "query",
+          "description": "データ区分3を指定する。  \n省略時は全データ区分3のデータが取得対象となる。文字列。  \n将来機能のため利用非推奨。\n",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "maxLength": 64,
+            "example": "5"
+          }
+        },
+        "Events.Query.from": {
+          "name": "from",
+          "in": "query",
+          "description": "イベント受信日時(イベントデータがクラウド側で記録された日時)抽出範囲(from)。  \n取得したいイベント受信日時の期間の始まりをJSTかつISO8601形式で指定する。\n",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2022-09-22T12:00:00+09:00"
+          }
+        },
+        "Events.Query.to": {
+          "name": "to",
+          "in": "query",
+          "description": "イベント受信日時(イベントデータがクラウド側で記録された日時)抽出範囲(to)。  \n取得したいイベント受信日時の期間の終わりをJSTかつISO8601形式で指定する。\n",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2022-09-22T12:01:00+09:00"
+          }
+        },
+        "Events.Query.tenantIds": {
+          "name": "tenantIds",
+          "in": "query",
+          "description": "テナントID(リソースを所有する事業者)を指定する。  \n複数指定可能であり、省略時は自テナント及び子テナントのデータが取得対象となる。文字列。\n",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "t0001",
+              "t0002"
+            ]
+          }
+        },
+        "Events.Query.resources": {
+          "name": "resources",
+          "in": "query",
+          "description": "リソースID(リソースを一意に特定可能なID)を指定する。  \n複数指定可能であり、省略時は全リソースのデータが取得対象となる。\n",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "S01GA10014BT",
+              "B02G110049SM"
+            ]
+          }
+        },
+        "Events.Query.resourceTypes": {
+          "name": "resourceTypes",
+          "in": "query",
+          "description": "リソース種別を指定する。  \nリソース種別の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``resourceTypes``シートを参照。  \n複数指定可能であり、省略時は全種別が取得対象となる。 \n",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "BT",
+              "SM"
+            ]
+          }
+        },
+        "Events.Query.eventTypes": {
+          "name": "eventTypes",
+          "in": "query",
+          "description": "イベント種別を指定する。  \nイベント種別の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``eventTypes``シートを参照。  \n複数指定可能であり、省略時は全種別が取得対象となる。\n",
+          "required": false,
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "1-110001-0",
+              "1-320002-3"
+            ]
+          }
+        },
+        "Events.Query.notificationLevel": {
+          "name": "notificationLevel",
+          "in": "query",
+          "description": "通知レベルを指定する。  \n通知レベルの一覧は「EWGF-Y028-J22005_添付1_コード定義」の``notificationLevel``シートを参照。 \n",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "example": "2",
+            "enum": [
+              "1",
+              "2",
+              "3"
+            ]
+          }
+        }
+      },
+      "schemas": {
+        "ApiSuccess": {
+          "type": "object",
+          "description": "#### 登録成功時のレスポンス(汎用)\n",
+          "properties": {
+            "status": {
+              "description": "##### ステータスコード\n",
+              "type": "integer",
+              "format": "int32",
+              "example": 200
+            },
+            "result": {
+              "description": "##### 結果メッセージ  \n全件登録成功   ：success  \n一部リソース失敗：partial  \n全件登録失敗    : error  \n",
+              "type": "string",
+              "example": "partial"
+            },
+            "message": {
+              "description": "##### メッセージ  \n全件登録成功   ：「登録成功」  \n一部リソース失敗：「一部リソース失敗」  \n全件登録失敗    : 「全リソース失敗」  \n",
+              "type": "string",
+              "example": "一部リソース失敗"
+            },
+            "details": {
+              "type": "object",
+              "description": "##### エラーメッセージ詳細   \n",
+              "properties": {
+                "successData": {
+                  "description": "##### 登録成功データ   \n",
+                  "type": "object",
+                  "$ref": "#/components/schemas/SuccessData"
+                },
+                "failedData": {
+                  "description": "##### 登録失敗データ   \n",
+                  "type": "object",
+                  "$ref": "#/components/schemas/FailedDataList"
+                }
+              }
+            }
+          }
+        },
+        "SuccessData": {
+          "properties": {
+            "resourceIdList": {
+              "description": "##### 登録成功したリソースIDのリスト\n",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "example": [
+                "0050001",
+                "0050002"
+              ]
+            }
+          }
+        },
+        "FailedDataList": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/components/schemas/FailedData"
+          }
+        },
+        "FailedData": {
+          "properties": {
+            "resourceId": {
+              "description": "##### リソースID   \n",
+              "type": "string",
+              "example": "0050003"
+            },
+            "messageList": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "example": [
+                "リソース[リソースID]が見つかりません。",
+                "登録データの期間は、過去2年前から未来4カ月後の範囲で入力してください。",
+                "登録データの整数部の最大桁数(10)を超過しました。",
+                "登録データの小数部の最大桁数(5)を超過しました。",
+                "登録データの文字列→数値変換に失敗しました。",
+                "登録データの最大文字数(64)を超過しました。",
+                "データ区分1の最大文字数(64)を超過しました。",
+                "データ区分1はコード定義[データ区分1]の範囲内で入力してください。",
+                "データ区分2の最大文字数(64)を超過しました。",
+                "データ区分3の最大文字数(64)を超過しました。"
+              ]
+            }
+          }
+        },
+        "ApiError": {
+          "type": "object",
+          "description": "#### エラー時のレスポンス(汎用)\n",
+          "properties": {
+            "status": {
+              "description": "##### ステータスコード\n",
+              "type": "integer",
+              "format": "int32"
+            },
+            "message": {
+              "description": "##### エラーメッセージ\n",
+              "type": "string"
+            },
+            "details": {
+              "description": "##### エラーメッセージ詳細\n",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "Resource": {
+          "description": "",
+          "type": "object",
+          "readOnly": true,
+          "properties": {
+            "resourceId": {
+              "description": "##### リソースID  \nリソースを一意に特定可能なID。\n",
+              "type": "string",
+              "example": "A01G010008SM"
+            },
+            "tenantId": {
+              "description": "##### テナントID  \nリソースを所有する事業者(テナント)。\n",
+              "type": "string",
+              "example": "t0001"
+            },
+            "resourceKey": {
+              "description": "##### リソースキー  \nリソースの情報を操作するための、リソースを一意に特定可能なキー。  \n将来機能のため利用非推奨。\n",
+              "type": "string",
+              "example": "A01G01SM0008"
+            },
+            "resourceType": {
+              "description": "##### リソース種別  \nリソース種別の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``resourceTypes``シートを参照。\n",
+              "type": "string",
+              "example": "SM"
+            },
+            "resourceNm": {
+              "description": "##### リソース名  \nリソースの名称。\n",
+              "type": "string",
+              "example": "リソース名"
+            },
+            "resourceConnectCd": {
+              "description": "##### リソース接続コード  \nリソースの供給地点特定番号コード。  \n",
+              "type": "string",
+              "example": "3000C0008"
+            },
+            "prefectureCd": {
+              "description": "##### 都道府県コード  \nリソースが存在する都道府県。都道府県の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``prefectureCd``シートを参照。\n",
+              "type": "string",
+              "example": "14"
+            },
+            "weatherPointCd": {
+              "description": "##### 気象ポイントコード  \n将来機能のため利用非推奨。\n",
+              "type": "string",
+              "example": "10"
+            },
+            "addressCd": {
+              "description": "##### 大字町丁目コード  \n地図機能のため利用非推奨。\n",
+              "type": "string",
+              "example": "142160008003"
+            },
+            "addressText": {
+              "description": "##### 住所文字列  \n地図機能のため利用非推奨。\n",
+              "type": "string",
+              "example": "住所文字列"
+            },
+            "latitude": {
+              "description": "##### 緯度  \nリソースが位置する地点の緯度。  \n地図機能のため利用非推奨。\n",
+              "type": "number",
+              "example": 35.494396
+            },
+            "longitude": {
+              "description": "##### 経度  \nリソースが位置する地点の経度。  \n地図機能のため利用非推奨。\n",
+              "type": "number",
+              "example": 139.411336
+            },
+            "parentResourceId": {
+              "description": "##### 親リソースのリソースID   \nリソースのマスタには電気的な親子関係を定義可能である。  \n例えば、ある需要家の蓄電池が放電したらその需要家の受電点の消費電力は減少するが、  \nこのとき受電点が親リソース、蓄電池が子リソースとなる。\n",
+              "type": "string",
+              "example": "ABOF0009"
+            },
+            "areaCd": {
+              "description": "##### 電力会社エリアコード  \n電力会社エリアコードの一覧は「EWGF-Y028-J22005_添付1_コード定義」の``areaCd``シートを参照。\n",
+              "type": "string",
+              "example": "3"
+            }
+          }
+        },
+        "ResourcePayload": {
+          "type": "object",
+          "description": "#### リソース(ペイロード：POST/PATCH共通)\n",
+          "required": [
+            "resourceType",
+            "resourceNm"
+          ],
+          "properties": {
+            "tenantId": {
+              "description": "##### テナントID  \nリソースを所有する事業者(テナント)。\n",
+              "type": "string",
+              "maxLength": 20,
+              "example": "t0001"
+            },
+            "resourceKey": {
+              "description": "##### リソースキー  \nリソースの情報を操作するための、リソースを一意に特定可能なキー。  \n将来機能のため利用非推奨。\n",
+              "type": "string",
+              "maxLength": 64,
+              "example": "A01G01SM0008"
+            },
+            "resourceType": {
+              "description": "##### リソース種別  \nリソース種別の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``resourceTypes``シートを参照。\n",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2,
+              "example": "SM"
+            },
+            "resourceNm": {
+              "description": "##### リソース名  \nリソースの名称。  \n",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "example": "リソース名"
+            },
+            "resourceConnectCd": {
+              "description": "##### リソース接続コード  \nリソースの供給地点特定番号コード。  \n",
+              "type": "string",
+              "maxLength": 22,
+              "example": "3000C0008"
+            },
+            "prefectureCd": {
+              "description": "##### 都道府県コード  \nリソースが存在する都道府県。都道府県の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``prefectureCd``シートを参照。\n",
+              "type": "string",
+              "maxLength": 2,
+              "example": "14"
+            },
+            "weatherPointCd": {
+              "description": "##### 気象ポイントコード  \n将来機能のため利用非推奨。\n",
+              "type": "string",
+              "maxLength": 6,
+              "example": "10"
+            },
+            "addressCd": {
+              "description": "##### 大字町丁目コード  \n地図機能のため利用非推奨。\n",
+              "type": "string",
+              "maxLength": 12,
+              "example": "142160008003"
+            },
+            "addressText": {
+              "description": "##### 住所文字列  \n地図機能のため利用非推奨。\n",
+              "type": "string",
+              "maxLength": 128,
+              "example": "住所文字列"
+            },
+            "latitude": {
+              "description": "##### 緯度  \nリソースが位置する地点の緯度。  \n地図機能のため利用非推奨。\n",
+              "type": "number",
+              "maxLength": 20,
+              "example": 35.494396
+            },
+            "longitude": {
+              "description": "##### 経度  \nリソースが位置する地点の経度。  \n地図機能のため利用非推奨。\n",
+              "type": "number",
+              "maxLength": 20,
+              "example": 139.411336
+            },
+            "parentResourceId": {
+              "description": "##### 親リソースのリソースID   \nリソースのマスタには電気的な親子関係を定義可能である。  \n例えば、ある需要家の蓄電池が放電したらその需要家の受電点の消費電力は減少するが、  \nこのとき受電点が親リソース、蓄電池が子リソースとなる。\n",
+              "type": "string",
+              "maxLength": 14,
+              "example": "ABOF0009"
+            },
+            "areaCd": {
+              "description": "##### 電力会社エリアコード  \n電力会社エリアコードの一覧は「EWGF-Y028-J22005_添付1_コード定義」の``areaCd``シートを参照。\n",
+              "type": "string",
+              "maxLength": 1,
+              "example": "9"
+            }
+          }
+        },
+        "ResourceUpdatePayload": {
+          "type": "object",
+          "description": "#### リソース(ペイロード：POST/PATCH共通)\n",
+          "properties": {
+            "tenantId": {
+              "description": "##### テナントID  \nリソースを所有する事業者(テナント)。\n",
+              "type": "string",
+              "maxLength": 20,
+              "example": "t0001"
+            },
+            "resourceKey": {
+              "description": "##### リソースキー  \nリソースの情報を操作するための、リソースを一意に特定可能なキー。  \n将来機能のため利用非推奨。\n",
+              "type": "string",
+              "maxLength": 64,
+              "example": "A01G01SM0008"
+            },
+            "resourceType": {
+              "description": "##### リソース種別  \nリソース種別の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``resourceTypes``シートを参照。\n",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2,
+              "example": "SM"
+            },
+            "resourceNm": {
+              "description": "##### リソース名  \nリソースの名称。  \n",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "example": "リソース名"
+            },
+            "resourceConnectCd": {
+              "description": "##### リソース接続コード  \nリソースの供給地点特定番号コード。  \n",
+              "type": "string",
+              "maxLength": 22,
+              "example": "3000C0008"
+            },
+            "prefectureCd": {
+              "description": "##### 都道府県コード  \nリソースが存在する都道府県。都道府県の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``prefectureCd``シートを参照。\n",
+              "type": "string",
+              "maxLength": 2,
+              "example": "14"
+            },
+            "weatherPointCd": {
+              "description": "##### 気象ポイントコード  \n将来機能のため利用非推奨。\n",
+              "type": "string",
+              "maxLength": 6,
+              "example": "10"
+            },
+            "addressCd": {
+              "description": "##### 大字町丁目コード  \n地図機能のため利用非推奨。\n",
+              "type": "string",
+              "maxLength": 12,
+              "example": "142160008003"
+            },
+            "addressText": {
+              "description": "##### 住所文字列  \n地図機能のため利用非推奨。\n",
+              "type": "string",
+              "maxLength": 128,
+              "example": "住所文字列"
+            },
+            "latitude": {
+              "description": "##### 緯度  \nリソースが位置する地点の緯度。  \n地図機能のため利用非推奨。\n",
+              "type": "number",
+              "maxLength": 20,
+              "example": 35.494396
+            },
+            "longitude": {
+              "description": "##### 経度  \nリソースが位置する地点の経度。  \n地図機能のため利用非推奨。\n",
+              "type": "number",
+              "maxLength": 20,
+              "example": 139.411336
+            },
+            "parentResourceId": {
+              "description": "##### 親リソースのリソースID   \nリソースのマスタには電気的な親子関係を定義可能である。  \n例えば、ある需要家の蓄電池が放電したらその需要家の受電点の消費電力は減少するが、  \nこのとき受電点が親リソース、蓄電池が子リソースとなる。\n",
+              "type": "string",
+              "maxLength": 14,
+              "example": "ABOF0009"
+            },
+            "areaCd": {
+              "description": "##### 電力会社エリアコード  \n電力会社エリアコードの一覧は「EWGF-Y028-J22005_添付1_コード定義」の``areaCd``シートを参照。\n",
+              "type": "string",
+              "maxLength": 1,
+              "example": "9"
+            }
+          }
+        },
+        "PlanData": {
+          "type": "object",
+          "description": "#### 指令値(レスポンス)\n",
+          "readOnly": true,
+          "properties": {
+            "from": {
+              "description": "##### 抽出範囲(from)  \n収集データの期間の始まりを示す。\n",
+              "type": "string",
+              "example": "2022-08-01T00:00:00+09:00",
+              "format": "date-time"
+            },
+            "to": {
+              "description": "##### 抽出範囲(to)  \n収集データの期間の終わりを示す。\n",
+              "type": "string",
+              "example": "2022-08-01T00:30:00+09:00",
+              "format": "date-time"
+            },
+            "resources": {
+              "description": "##### リソース\n",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/PlanDataResource"
+              }
+            }
+          }
+        },
+        "PlanDataResource": {
+          "type": "object",
+          "description": "#### 指令値(レスポンス)\n",
+          "readOnly": true,
+          "properties": {
+            "resourceId": {
+              "description": "##### リソースID  \nリソースを一意に特定可能なID。\n",
+              "type": "string",
+              "example": "B01G010011BT"
+            },
+            "tenantId": {
+              "description": "##### テナントID  \nリソースを所有する事業者（テナント）。\n",
+              "type": "string",
+              "maxLength": 20,
+              "example": "t0001"
+            },
+            "attributes": {
+              "description": "##### 属性\n",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/PlanDataAttribute"
+              }
+            }
+          }
+        },
+        "PlanDataAttribute": {
+          "type": "object",
+          "description": "#### 指令値.属性(レスポンス)\n",
+          "readOnly": true,
+          "properties": {
+            "attribute": {
+              "description": "##### 属性識別子  \n属性の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``attributes``シートを参照。  \n複数指定可能であり、省略時は全属性のデータが取得対象となる。6桁の数字。\n",
+              "type": "string",
+              "example": "900000"
+            },
+            "intervalType": {
+              "description": "##### 指令間隔識別子  \n指令間隔識別子は、1(1分)、2(30分)のデータを示す。\n",
+              "type": "integer",
+              "format": "int32",
+              "example": 1
+            },
+            "interval": {
+              "description": "##### 周期(秒)\n",
+              "type": "integer",
+              "format": "int32",
+              "example": 60
+            },
+            "values": {
+              "description": "##### データ\n  ※特定の時刻に対するデータが欠損している場合、  \n  その時刻のデータはレスポンスしない。  \n  例えば、9:01のデータが欠損している場合、9:00～9:03を検索すると、  \n  9:00,9:02,9:03のデータをレスポンスする。\n",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/PlanDataValue"
+              },
+              "example": [
+                {
+                  "datetime": "2022-08-01T00:00:00+09:00",
+                  "value": "2.30730"
+                },
+                {
+                  "datetime": "2022-08-01T00:01:00+09:00",
+                  "value": "2.30750"
+                },
+                {
+                  "datetime": "2022-08-01T00:02:00+09:00",
+                  "value": "2.30740"
+                },
+                {
+                  "datetime": "2022-08-01T00:03:00+09:00",
+                  "value": "2.30860"
+                },
+                {
+                  "datetime": "2022-08-01T00:04:00+09:00",
+                  "value": "2.30740"
+                },
+                {
+                  "datetime": "2022-08-01T00:05:00+09:00",
+                  "value": "2.30460"
+                },
+                {
+                  "datetime": "2022-08-01T00:06:00+09:00",
+                  "value": "2.30750"
+                },
+                {
+                  "datetime": "2022-08-01T00:07:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:08:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:09:00+09:00",
+                  "value": "2.30730"
+                },
+                {
+                  "datetime": "2022-08-01T00:10:00+09:00",
+                  "value": "2.30720"
+                },
+                {
+                  "datetime": "2022-08-01T00:11:00+09:00",
+                  "value": "2.30710"
+                },
+                {
+                  "datetime": "2022-08-01T00:12:00+09:00",
+                  "value": "2.30700"
+                },
+                {
+                  "datetime": "2022-08-01T00:13:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:14:00+09:00",
+                  "value": "2.30770"
+                },
+                {
+                  "datetime": "2022-08-01T00:15:00+09:00",
+                  "value": "2.30750"
+                },
+                {
+                  "datetime": "2022-08-01T00:16:00+09:00",
+                  "value": "2.30740"
+                },
+                {
+                  "datetime": "2022-08-01T00:17:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:18:00+09:00",
+                  "value": "2.30730"
+                },
+                {
+                  "datetime": "2022-08-01T00:19:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:20:00+09:00",
+                  "value": "2.30730"
+                },
+                {
+                  "datetime": "2022-08-01T00:21:00+09:00",
+                  "value": "2.30660"
+                },
+                {
+                  "datetime": "2022-08-01T00:22:00+09:00",
+                  "value": "2.30640"
+                },
+                {
+                  "datetime": "2022-08-01T00:23:00+09:00",
+                  "value": "2.30650"
+                },
+                {
+                  "datetime": "2022-08-01T00:24:00+09:00",
+                  "value": "2.30640"
+                },
+                {
+                  "datetime": "2022-08-01T00:25:00+09:00",
+                  "value": "2.30630"
+                },
+                {
+                  "datetime": "2022-08-01T00:26:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:27:00+09:00",
+                  "value": "2.30770"
+                },
+                {
+                  "datetime": "2022-08-01T00:28:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:29:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:30:00+09:00",
+                  "value": "2.30760"
+                }
+              ]
+            }
+          }
+        },
+        "PlanDataValue": {
+          "type": "object",
+          "description": "#### 指令値.データ(レスポンス)\n",
+          "readOnly": true,
+          "properties": {
+            "datetime": {
+              "description": "##### 日時\n",
+              "type": "string",
+              "format": "date-time"
+            },
+            "value": {
+              "description": "##### 値\n",
+              "type": "string"
+            }
+          }
+        },
+        "CollectData": {
+          "type": "object",
+          "description": "#### 実績値(レスポンス)\n",
+          "readOnly": true,
+          "properties": {
+            "from": {
+              "description": "##### 抽出範囲(from)  \n収集データの期間の始まりを示す。\n",
+              "type": "string",
+              "example": "2022-08-01T00:00:00+09:00",
+              "format": "date-time"
+            },
+            "to": {
+              "description": "##### 抽出範囲(to)  \n収集データの期間の終わりを示す。\n",
+              "type": "string",
+              "example": "2022-08-01T00:30:00+09:00",
+              "format": "date-time"
+            },
+            "resources": {
+              "description": "##### リソース\n",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/CollectDataResource"
+              }
+            }
+          }
+        },
+        "CollectDataResource": {
+          "type": "object",
+          "description": "#### 実績値(レスポンス)\n",
+          "readOnly": true,
+          "properties": {
+            "resourceId": {
+              "description": "##### リソースID  \nリソースを一意に特定可能なID。\n",
+              "type": "string",
+              "example": "B01G010011BT"
+            },
+            "tenantId": {
+              "description": "##### テナントID  \nリソースを所有する事業者（テナント）。\n",
+              "type": "string",
+              "maxLength": 20,
+              "example": "t0001"
+            },
+            "attributes": {
+              "description": "##### 属性\n",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/CollectDataAttribute"
+              }
+            }
+          }
+        },
+        "CollectDataAttribute": {
+          "type": "object",
+          "description": "#### 実績値.属性(レスポンス)\n",
+          "readOnly": true,
+          "properties": {
+            "attribute": {
+              "description": "##### 属性識別子  \n属性の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``attributes``シートを参照。  \n6桁の数字。\n",
+              "type": "string",
+              "example": "900000"
+            },
+            "dataType1": {
+              "description": "##### データ区分1  \nデータ区分1の値一覧は「EWGF-Y028-J22005_添付1_コード定義」の``dataKbn1``シートを参照。  \n文字列。\n",
+              "type": "string",
+              "example": "6"
+            },
+            "dataType2": {
+              "description": "##### データ区分2  \n文字列。\n",
+              "type": "string",
+              "example": "5"
+            },
+            "dataType3": {
+              "description": "##### データ区分3  \n文字列。\n",
+              "type": "string",
+              "example": "5"
+            },
+            "cycle": {
+              "description": "##### 周期識別子  \n周期の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``cycle``シートを参照。\n",
+              "type": "integer",
+              "format": "int32",
+              "example": 2
+            },
+            "interval": {
+              "description": "##### 周期(秒)\n",
+              "type": "integer",
+              "format": "int32",
+              "example": 60
+            },
+            "values": {
+              "description": "##### データ\n  ※特定の時刻に対するデータが欠損している場合、  \n  その時刻のデータはレスポンスしない。  \n  例えば、9:01のデータが欠損している場合、9:00～9:03を検索すると、  \n  9:00,9:02,9:03のデータをレスポンスする。\n",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/CollectDataValue"
+              },
+              "example": [
+                {
+                  "datetime": "2022-08-01T00:00:00+09:00",
+                  "value": "2.30730"
+                },
+                {
+                  "datetime": "2022-08-01T00:01:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:02:00+09:00",
+                  "value": "2.30750"
+                },
+                {
+                  "datetime": "2022-08-01T00:03:00+09:00",
+                  "value": "2.30740"
+                },
+                {
+                  "datetime": "2022-08-01T00:04:00+09:00",
+                  "value": "2.30860"
+                },
+                {
+                  "datetime": "2022-08-01T00:05:00+09:00",
+                  "value": "2.30740"
+                },
+                {
+                  "datetime": "2022-08-01T00:06:00+09:00",
+                  "value": "2.30460"
+                },
+                {
+                  "datetime": "2022-08-01T00:07:00+09:00",
+                  "value": "2.30750"
+                },
+                {
+                  "datetime": "2022-08-01T00:08:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:09:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:10:00+09:00",
+                  "value": "2.30730"
+                },
+                {
+                  "datetime": "2022-08-01T00:11:00+09:00",
+                  "value": "2.30720"
+                },
+                {
+                  "datetime": "2022-08-01T00:12:00+09:00",
+                  "value": "2.30710"
+                },
+                {
+                  "datetime": "2022-08-01T00:13:00+09:00",
+                  "value": "2.30700"
+                },
+                {
+                  "datetime": "2022-08-01T00:14:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:15:00+09:00",
+                  "value": "2.30770"
+                },
+                {
+                  "datetime": "2022-08-01T00:16:00+09:00",
+                  "value": "2.30750"
+                },
+                {
+                  "datetime": "2022-08-01T00:17:00+09:00",
+                  "value": "2.30740"
+                },
+                {
+                  "datetime": "2022-08-01T00:18:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:19:00+09:00",
+                  "value": "2.30730"
+                },
+                {
+                  "datetime": "2022-08-01T00:20:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:21:00+09:00",
+                  "value": "2.30730"
+                },
+                {
+                  "datetime": "2022-08-01T00:22:00+09:00",
+                  "value": "2.30660"
+                },
+                {
+                  "datetime": "2022-08-01T00:23:00+09:00",
+                  "value": "2.30640"
+                },
+                {
+                  "datetime": "2022-08-01T00:24:00+09:00",
+                  "value": "2.30650"
+                },
+                {
+                  "datetime": "2022-08-01T00:25:00+09:00",
+                  "value": "2.30640"
+                },
+                {
+                  "datetime": "2022-08-01T00:26:00+09:00",
+                  "value": "2.30630"
+                },
+                {
+                  "datetime": "2022-08-01T00:27:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:28:00+09:00",
+                  "value": "2.30770"
+                },
+                {
+                  "datetime": "2022-08-01T00:29:00+09:00",
+                  "value": "2.30760"
+                },
+                {
+                  "datetime": "2022-08-01T00:30:00+09:00",
+                  "value": "2.30760"
+                }
+              ]
+            }
+          }
+        },
+        "CollectDataValue": {
+          "type": "object",
+          "description": "#### 実績値.データ(レスポンス)\n",
+          "readOnly": true,
+          "properties": {
+            "datetime": {
+              "description": "##### 日時\n",
+              "type": "string",
+              "format": "date-time"
+            },
+            "value": {
+              "description": "##### 値\n",
+              "type": "string"
+            }
+          }
+        },
+        "CollectPayload": {
+          "type": "object",
+          "description": "実績値(ペイロード：POST/PATCH共通)\n",
+          "required": [
+            "cycle",
+            "resources"
+          ],
+          "properties": {
+            "cycle": {
+              "description": "##### 周期識別子  \n 周期の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``cycle``シートを参照。\n",
+              "type": "integer",
+              "format": "int32",
+              "example": 2
+            },
+            "resources": {
+              "description": "リソース情報",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/CollectPayloadResource"
+              }
+            }
+          }
+        },
+        "CollectPayloadResource": {
+          "type": "object",
+          "description": "実績値.リソース(ペイロード：POST/PATCH共通)\n",
+          "required": [
+            "resourceId",
+            "attributes"
+          ],
+          "properties": {
+            "resourceId": {
+              "description": "##### リソースID  \n リソースを一意に特定可能なID。\n",
+              "type": "string",
+              "maxLength": 14,
+              "example": "0050001"
+            },
+            "attributes": {
+              "description": "属性\n",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/CollectPayloadAttribute"
+              }
+            }
+          }
+        },
+        "CollectPayloadAttribute": {
+          "type": "object",
+          "description": "実績値.属性(ペイロード：POST/PATCH共通)\n",
+          "required": [
+            "attribute",
+            "values"
+          ],
+          "properties": {
+            "attribute": {
+              "description": "##### 属性識別子  \n属性の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``attributes``シートを参照。  \n6桁の数字。\n",
+              "type": "string",
+              "maxLength": 64,
+              "example": "310001"
+            },
+            "dataType1": {
+              "description": "##### データ区分1  \nデータ区分1の値一覧は「EWGF-Y028-J22005_添付1_コード定義」の``dataKbn1``シートを参照。  \n文字列。  \nデータ区分1の最大文字数は、64文字とする。\n",
+              "type": "string",
+              "example": "6"
+            },
+            "dataType2": {
+              "description": "##### データ区分2  \n文字列。  \n将来機能のため利用非推奨。  \nデータ区分2の最大文字数は、64文字とする。\n",
+              "type": "string",
+              "example": "5"
+            },
+            "dataType3": {
+              "description": "##### データ区分3  \n文字列。  \n将来機能のため利用非推奨。  \nデータ区分3の最大文字数は、64文字とする。\n",
+              "type": "string",
+              "example": "5"
+            },
+            "values": {
+              "description": "データ\n",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/CollectPayloadValue"
+              }
+            }
+          }
+        },
+        "CollectPayloadValue": {
+          "description": "実績値.データ(ペイロード：POST/PATCH共通)\n",
+          "type": "object",
+          "required": [
+            "datetime",
+            "value"
+          ],
+          "properties": {
+            "datetime": {
+              "description": "日時  \n登録データの期間は、過去2年前から未来4カ月とする。  \n",
+              "type": "string",
+              "format": "date-time",
+              "example": "2023-09-01T00:01:00+09:00"
+            },
+            "value": {
+              "description": "値  \n登録データ値の制約は以下3つとする。  \n\n登録値の最大文字数は、64文字とする。  \n登録値の最大整数桁数は、10桁とする。  \n登録値の最大小数桁数は、5桁とする。  \n",
+              "type": "string",
+              "example": "2.30760"
+            }
+          }
+        },
+        "Event": {
+          "type": "object",
+          "description": "#### イベントデータ(レスポンス)\n",
+          "readOnly": true,
+          "properties": {
+            "from": {
+              "description": "##### イベント受信日時抽出範囲(from)  \nイベントデータの受信日時の期間の始まりを示す。  \n受信日時とはイベントデータがクラウド側で記録された日時である。  \nJSTかつISO8601形式。\n",
+              "type": "string",
+              "example": "2022-03-25T12:00:00+09:00",
+              "format": "date-time"
+            },
+            "to": {
+              "description": "##### イベント受信日時抽出範囲(to)  \nイベントデータの受信日時の期間の終わりを示す。  \n受信日時とはイベントデータがクラウド側で記録された日時である。  \nJSTかつISO8601形式。\n",
+              "type": "string",
+              "example": "2022-03-25T12:01:00+09:00",
+              "format": "date-time"
+            },
+            "resources": {
+              "description": "##### リソース\n",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/EventResourceData"
+              }
+            }
+          }
+        },
+        "EventResourceData": {
+          "type": "object",
+          "description": "#### イベントデータ(レスポンス)\n",
+          "readOnly": true,
+          "properties": {
+            "resourceId": {
+              "description": "##### リソースID  \nリソースを一意に特定可能なID。\n",
+              "type": "string",
+              "example": "0000081"
+            },
+            "tenantId": {
+              "description": "##### テナント  \nリソースを所有する事業者（テナント）。\n",
+              "type": "string",
+              "example": "t0003"
+            },
+            "events": {
+              "description": "##### イベント\n",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/EventData"
+              }
+            }
+          }
+        },
+        "EventData": {
+          "type": "object",
+          "description": "#### イベントデータ(レスポンス)\n",
+          "readOnly": true,
+          "properties": {
+            "eventId": {
+              "description": "##### イベントID  \nイベントを一意に特定可能なID。\n",
+              "type": "string"
+            },
+            "receivedDatetime": {
+              "description": "##### 受信日時  \nイベントデータの受信日時を示す。\n",
+              "type": "string",
+              "example": "2022-03-25T12:01:00+09:00",
+              "format": "date-time"
+            },
+            "occurrenceDatetime": {
+              "description": "##### 発生日時  \nイベントデータが発生した日時を示す。\n",
+              "type": "string",
+              "example": "2022-03-25T12:00:00+09:00",
+              "format": "date-time"
+            },
+            "eventType": {
+              "description": "##### イベント種別  \nイベント種別の一覧は「EWGF-Y028-J22005_添付1_コード定義」の``eventTypes``シートを参照。\n",
+              "type": "string",
+              "example": "1-320006-1"
+            },
+            "eventNm": {
+              "description": "##### イベント名\n",
+              "type": "string",
+              "example": "積算電力量(売電）上限値逸脱"
+            },
+            "notificationLevel": {
+              "description": "##### 通知レベル\n通知レベルの一覧は「EWGF-Y028-J22005_添付1_コード定義」の``notificationLevel``シートを参照。 \n",
+              "type": "string",
+              "example": "2"
+            }
+          }
+        }
+      },
+      "examples": {
+        "Error-Validation1": {
+          "description": "汎用エラー例(一次精査)",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー {型名}(エラー数 2)",
+            "details": [
+              "[項目1]は必須項目です。",
+              "[項目2]は\"100\"以上で入力してください。"
+            ]
+          }
+        },
+        "Error-Validation2": {
+          "description": "汎用エラー例(二次精査)",
+          "value": {
+            "status": 400,
+            "message": "{エンティティ名}が見つかりませんでした。",
+            "details": []
+          }
+        },
+        "Error-Validation-JsonParse-Error": {
+          "description": "Json変換エラー",
+          "value": {
+            "status": 400,
+            "message": "リクエストボディの解析に失敗しました。",
+            "details": []
+          }
+        },
+        "Error-Validation-Type-Error": {
+          "description": "要求パラメータ書式不正",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "[データ項目]の値[値]が不正です。"
+            ]
+          }
+        },
+        "Error-Validation-Required-Error": {
+          "description": "必須項目エラー",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "[データ項目]は必須項目です。"
+            ]
+          }
+        },
+        "Error-Validation-StringSize-Max": {
+          "description": "文字列上限エラー",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "[対象データ]は[文字数]文字以上、[文字数]文字以内で入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-Area": {
+          "description": "電力会社エリアコード異常",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "電力会社エリアコードはコード定義[電力会社エリア]の範囲内で入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-Latlon": {
+          "description": "緯度経度チェックエラー",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "緯度、経度は共に入力・未入力でそろえてください。"
+            ]
+          }
+        },
+        "Error-Validation-Resource-Max": {
+          "description": "リソース上限",
+          "value": {
+            "status": 400,
+            "message": "検索結果のリソース数が上限(1000件)を超えました。検索範囲を狭めてください。",
+            "details": []
+          }
+        },
+        "Error-Validation-Resource-Exists": {
+          "description": "リソース不在",
+          "value": {
+            "status": 400,
+            "message": "リソース[リソースID]が見つかりません。",
+            "details": []
+          }
+        },
+        "Error-Validation-ParentResource-Exists": {
+          "description": "親リソース不在",
+          "value": {
+            "status": 400,
+            "message": "リソース[親リソースID]が見つかりません。",
+            "details": []
+          }
+        },
+        "Error-Validation-Tenant-Exists": {
+          "description": "テナント不在",
+          "value": {
+            "status": 400,
+            "message": "テナント[テナント名]が見つかりません。",
+            "details": []
+          }
+        },
+        "Error-Validation-Cycle3-DateFormatError": {
+          "description": "周期3の日時フォーマットエラー",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "cycle(周期)を[周期値]で指定した場合、datetimeの分は00,05,10,15,20,25,30,35,40,45,50,55のいずれかとなるように入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-Cycle4-DateFormatError": {
+          "description": "周期4の日時フォーマットエラー",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "cycle(周期)を[周期値]で指定した場合、datetimeの分は00,30のいずれかとなるように入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-Cycle5-DateFormatError": {
+          "description": "周期5の日時フォーマットエラー",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "cycle(周期)を[周期値]で指定した場合、datetimeの時は00,12のいずれかとなるように、且つdatetimeの分は00となるように入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-FromToRange": {
+          "description": "抽出範囲異常",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "[抽出範囲(From)] <= [抽出範囲(To)]で入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-GetCondition": {
+          "description": "抽出条件異常",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "リソース種別、リソースはどちらかのみを指定してください。"
+            ]
+          }
+        },
+        "Error-Validation-CheckAttribute": {
+          "description": "属性識別子異常",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "属性識別子はコード定義[属性識別子]の範囲内で入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-CheckCycle": {
+          "description": "周期識別子異常",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "周期識別子はコード定義[周期識別子]の範囲内で入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-CheckIntervalType": {
+          "description": "指令間隔識別子異常",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "指令間隔識別子はコード定義[指令間隔識別子]の範囲内で入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-IntervalType1-MaxRange": {
+          "description": "指令間隔識別子1の範囲上限",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "intervalType(指令間隔識別子)を[指令間隔識別子]で指定した場合、from～toの範囲は[日]日以内で指定してください。"
+            ]
+          }
+        },
+        "Error-Validation-IntervalType2-MaxRange": {
+          "description": "指令間隔識別子2の範囲上限",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "intervalType(指令間隔識別子)を[指令間隔識別子]で指定した場合、from～toの範囲は[月]か月以内で指定してください。"
+            ]
+          }
+        },
+        "Error-Validation-IntervalType0-MaxRange": {
+          "description": "指令間隔識別子0の範囲上限",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "intervalType(指令間隔識別子)を[指令間隔識別子]で指定した場合、from～toの範囲は[日]日以内で指定してください。"
+            ]
+          }
+        },
+        "Error-Validation-Cycle1-MaxRange": {
+          "description": "周期1の範囲上限",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "cycle(周期)を[周期値]で指定した場合、from～toの範囲は[時間]時間以内で指定してください。"
+            ]
+          }
+        },
+        "Error-Validation-Cycle2-MaxRange": {
+          "description": "周期2の範囲上限",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "cycle(周期)を[周期値]で指定した場合、from～toの範囲は[日]日以内で指定してください。"
+            ]
+          }
+        },
+        "Error-Validation-Cycle3-MaxRange": {
+          "description": "周期3の範囲上限",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "cycle(周期)を[周期値]で指定した場合、from～toの範囲は[日]日以内で指定してください。"
+            ]
+          }
+        },
+        "Error-Validation-Cycle4-MaxRange": {
+          "description": "周期4の範囲上限",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "cycle(周期)を[周期値]で指定した場合、from～toの範囲は[月]か月以内で指定してください。"
+            ]
+          }
+        },
+        "Error-Validation-Cycle5-MaxRange": {
+          "description": "周期5の範囲上限",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "cycle(周期)を[周期値]で指定した場合、from～toの範囲は[月]か月以内で指定してください。"
+            ]
+          }
+        },
+        "Error-Validation-Resource-Type": {
+          "description": "リソース種別コード異常",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "リソース種別はコード定義[リソース種別(電源種別)]の範囲内で入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-Data-Type1": {
+          "description": "データ区分1異常",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "データ区分1はコード定義[データ区分]の範囲内で入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-Data-Type2": {
+          "description": "データ区分2異常",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "データ区分2はコード定義[データ区分]の範囲内で入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-Data-Type3": {
+          "description": "データ区分3異常",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "データ区分3はコード定義[データ区分]の範囲内で入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-Prefecture-Type": {
+          "description": "都道府県コード異常",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "都道府県はコード定義[都道府県]の範囲内で入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-EventFromToRange": {
+          "description": "イベント抽出範囲異常",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "[イベント受信日時抽出範囲(From)] <= [イベント受信日時抽出範囲(To)]で入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-EventType": {
+          "description": "イベント種別異常",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "イベント種別の値が定義外です。"
+            ]
+          }
+        },
+        "Error-Validation-NotificationLevel": {
+          "description": "通知レベル異常",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "通知レベルはコード定義[通知レベル]の範囲内で入力してください。"
+            ]
+          }
+        },
+        "Error-Validation-EventResources": {
+          "description": "対象リソース数上限",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "リソースは1000件以内で指定してください。"
+            ]
+          }
+        },
+        "Error-Validation-EventFromToMaxRange": {
+          "description": "イベント抽出範囲上限",
+          "value": {
+            "status": 400,
+            "message": "バリデーションエラー(エラー数 n)",
+            "details": [
+              "from～toの範囲は2日以内で指定してください。"
+            ]
+          }
+        },
+        "Error-Unexpected": {
+          "description": "汎用エラー例(想定外)",
+          "value": {
+            "status": 500,
+            "message": "想定外のエラーが発生しました。",
+            "details": []
+          }
+        }
+      },
+      "responses": {
+        "ApiSuccess": {
+          "description": "API正常終了のメッセージ",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiSuccess"
+              }
+            }
+          }
+        },
+        "ApiError": {
+          "description": "APIの処理中のエラー",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              "examples": {
+                "一次精査エラー": {
+                  "$ref": "#/components/examples/Error-Validation1"
+                },
+                "二次精査エラー": {
+                  "$ref": "#/components/examples/Error-Validation2"
+                }
+              }
+            }
+          }
+        },
+        "ApiErrorSearchResources": {
+          "description": "APIの処理中のエラー",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              "examples": {
+                "要求パラメータ書式不正": {
+                  "$ref": "#/components/examples/Error-Validation-Type-Error"
+                },
+                "必須項目エラー": {
+                  "$ref": "#/components/examples/Error-Validation-Required-Error"
+                },
+                "リソース種別コード異常": {
+                  "$ref": "#/components/examples/Error-Validation-Resource-Type"
+                },
+                "都道府県コード異常": {
+                  "$ref": "#/components/examples/Error-Validation-Prefecture-Type"
+                },
+                "電力会社エリアコード異常": {
+                  "$ref": "#/components/examples/Error-Validation-Area"
+                },
+                "抽出条件異常": {
+                  "$ref": "#/components/examples/Error-Validation-GetCondition"
+                },
+                "リソース上限": {
+                  "$ref": "#/components/examples/Error-Validation-Resource-Max"
+                }
+              }
+            }
+          }
+        },
+        "ApiErrorCreateResources": {
+          "description": "APIの処理中のエラー",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              "examples": {
+                "Json変換エラー": {
+                  "$ref": "#/components/examples/Error-Validation-JsonParse-Error"
+                },
+                "要求パラメータ書式不正": {
+                  "$ref": "#/components/examples/Error-Validation-Type-Error"
+                },
+                "必須項目エラー": {
+                  "$ref": "#/components/examples/Error-Validation-Required-Error"
+                },
+                "テナント不在": {
+                  "$ref": "#/components/examples/Error-Validation-Tenant-Exists"
+                },
+                "リソース種別コード異常": {
+                  "$ref": "#/components/examples/Error-Validation-Resource-Type"
+                },
+                "都道府県コード異常": {
+                  "$ref": "#/components/examples/Error-Validation-Prefecture-Type"
+                },
+                "親リソース不在": {
+                  "$ref": "#/components/examples/Error-Validation-ParentResource-Exists"
+                },
+                "電力会社エリアコード異常": {
+                  "$ref": "#/components/examples/Error-Validation-Area"
+                },
+                "緯度経度チェックエラー": {
+                  "$ref": "#/components/examples/Error-Validation-Latlon"
+                },
+                "文字列上限エラー": {
+                  "$ref": "#/components/examples/Error-Validation-StringSize-Max"
+                }
+              }
+            }
+          }
+        },
+        "ApiErrorGetResources": {
+          "description": "APIの処理中のエラー",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              "examples": {
+                "要求パラメータ書式不正": {
+                  "$ref": "#/components/examples/Error-Validation-Type-Error"
+                },
+                "必須項目エラー": {
+                  "$ref": "#/components/examples/Error-Validation-Required-Error"
+                },
+                "リソース不在": {
+                  "$ref": "#/components/examples/Error-Validation-Resource-Exists"
+                }
+              }
+            }
+          }
+        },
+        "ApiErrorUpdateResources": {
+          "description": "APIの処理中のエラー",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              "examples": {
+                "Json変換エラー": {
+                  "$ref": "#/components/examples/Error-Validation-JsonParse-Error"
+                },
+                "要求パラメータ書式不正": {
+                  "$ref": "#/components/examples/Error-Validation-Type-Error"
+                },
+                "必須項目エラー": {
+                  "$ref": "#/components/examples/Error-Validation-Required-Error"
+                },
+                "リソース不在": {
+                  "$ref": "#/components/examples/Error-Validation-Resource-Exists"
+                },
+                "リソース種別コード異常": {
+                  "$ref": "#/components/examples/Error-Validation-Resource-Type"
+                },
+                "都道府県コード異常": {
+                  "$ref": "#/components/examples/Error-Validation-Prefecture-Type"
+                },
+                "親リソース不在": {
+                  "$ref": "#/components/examples/Error-Validation-ParentResource-Exists"
+                },
+                "電力会社エリアコード異常": {
+                  "$ref": "#/components/examples/Error-Validation-Area"
+                },
+                "緯度経度チェックエラー": {
+                  "$ref": "#/components/examples/Error-Validation-Latlon"
+                }
+              }
+            }
+          }
+        },
+        "ApiErrorDeleteResources": {
+          "description": "APIの処理中のエラー",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              "examples": {
+                "要求パラメータ書式不正": {
+                  "$ref": "#/components/examples/Error-Validation-Type-Error"
+                },
+                "必須項目エラー": {
+                  "$ref": "#/components/examples/Error-Validation-Required-Error"
+                },
+                "リソース不在": {
+                  "$ref": "#/components/examples/Error-Validation-Resource-Exists"
+                }
+              }
+            }
+          }
+        },
+        "ApiErrorSearchPlan": {
+          "description": "APIの処理中のエラー",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              "examples": {
+                "要求パラメータ書式不正": {
+                  "$ref": "#/components/examples/Error-Validation-Type-Error"
+                },
+                "必須項目エラー": {
+                  "$ref": "#/components/examples/Error-Validation-Required-Error"
+                },
+                "抽出条件異常": {
+                  "$ref": "#/components/examples/Error-Validation-GetCondition"
+                },
+                "抽出範囲異常": {
+                  "$ref": "#/components/examples/Error-Validation-FromToRange"
+                },
+                "属性識別子異常": {
+                  "$ref": "#/components/examples/Error-Validation-CheckAttribute"
+                },
+                "指令間隔識別子異常": {
+                  "$ref": "#/components/examples/Error-Validation-CheckIntervalType"
+                },
+                "リソース上限": {
+                  "$ref": "#/components/examples/Error-Validation-Resource-Max"
+                },
+                "指令間隔識別子1の範囲上限": {
+                  "$ref": "#/components/examples/Error-Validation-IntervalType1-MaxRange"
+                },
+                "指令間隔識別子2の範囲上限": {
+                  "$ref": "#/components/examples/Error-Validation-IntervalType2-MaxRange"
+                },
+                "指令間隔識別子0の範囲上限": {
+                  "$ref": "#/components/examples/Error-Validation-IntervalType0-MaxRange"
+                }
+              }
+            }
+          }
+        },
+        "ApiErrorSearchCollect": {
+          "description": "APIの処理中のエラー",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              "examples": {
+                "要求パラメータ書式不正": {
+                  "$ref": "#/components/examples/Error-Validation-Type-Error"
+                },
+                "必須項目エラー": {
+                  "$ref": "#/components/examples/Error-Validation-Required-Error"
+                },
+                "抽出条件異常": {
+                  "$ref": "#/components/examples/Error-Validation-GetCondition"
+                },
+                "抽出範囲異常": {
+                  "$ref": "#/components/examples/Error-Validation-FromToRange"
+                },
+                "属性識別子異常": {
+                  "$ref": "#/components/examples/Error-Validation-CheckAttribute"
+                },
+                "周期識別子異常": {
+                  "$ref": "#/components/examples/Error-Validation-CheckCycle"
+                },
+                "リソース上限": {
+                  "$ref": "#/components/examples/Error-Validation-Resource-Max"
+                },
+                "周期1の範囲上限": {
+                  "$ref": "#/components/examples/Error-Validation-Cycle1-MaxRange"
+                },
+                "周期2の範囲上限": {
+                  "$ref": "#/components/examples/Error-Validation-Cycle2-MaxRange"
+                },
+                "周期3の範囲上限": {
+                  "$ref": "#/components/examples/Error-Validation-Cycle3-MaxRange"
+                },
+                "周期4の範囲上限": {
+                  "$ref": "#/components/examples/Error-Validation-Cycle4-MaxRange"
+                },
+                "周期5の範囲上限": {
+                  "$ref": "#/components/examples/Error-Validation-Cycle5-MaxRange"
+                }
+              }
+            }
+          }
+        },
+        "ApiErrorCreateCollect": {
+          "description": "APIの処理中のエラー",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              "examples": {
+                "Json変換エラー": {
+                  "$ref": "#/components/examples/Error-Validation-JsonParse-Error"
+                },
+                "要求パラメータ書式不正": {
+                  "$ref": "#/components/examples/Error-Validation-Type-Error"
+                },
+                "必須項目エラー": {
+                  "$ref": "#/components/examples/Error-Validation-Required-Error"
+                },
+                "周期識別子異常": {
+                  "$ref": "#/components/examples/Error-Validation-CheckCycle"
+                },
+                "属性識別子異常": {
+                  "$ref": "#/components/examples/Error-Validation-CheckAttribute"
+                },
+                "文字列上限エラー": {
+                  "$ref": "#/components/examples/Error-Validation-StringSize-Max"
+                },
+                "周期3の日時フォーマットエラー": {
+                  "$ref": "#/components/examples/Error-Validation-Cycle3-DateFormatError"
+                },
+                "周期4の日時フォーマットエラー": {
+                  "$ref": "#/components/examples/Error-Validation-Cycle4-DateFormatError"
+                },
+                "周期5の日時フォーマットエラー": {
+                  "$ref": "#/components/examples/Error-Validation-Cycle5-DateFormatError"
+                }
+              }
+            }
+          }
+        },
+        "ApiErrorSearchEvent": {
+          "description": "APIの処理中のエラー",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              "examples": {
+                "要求パラメータ書式不正": {
+                  "$ref": "#/components/examples/Error-Validation-Type-Error"
+                },
+                "必須項目エラー": {
+                  "$ref": "#/components/examples/Error-Validation-Required-Error"
+                },
+                "イベント抽出範囲異常": {
+                  "$ref": "#/components/examples/Error-Validation-EventFromToRange"
+                },
+                "抽出条件異常": {
+                  "$ref": "#/components/examples/Error-Validation-GetCondition"
+                },
+                "イベント種別異常": {
+                  "$ref": "#/components/examples/Error-Validation-EventType"
+                },
+                "通知レベル異常": {
+                  "$ref": "#/components/examples/Error-Validation-NotificationLevel"
+                },
+                "対象リソース数上限": {
+                  "$ref": "#/components/examples/Error-Validation-EventResources"
+                },
+                "イベント抽出範囲上限": {
+                  "$ref": "#/components/examples/Error-Validation-EventFromToMaxRange"
+                }
+              }
+            }
+          }
+        },
+        "UnexpectedError": {
+          "description": "想定外のエラー",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiError"
+              },
+              "examples": {
+                "想定外エラー": {
+                  "$ref": "#/components/examples/Error-Unexpected"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }

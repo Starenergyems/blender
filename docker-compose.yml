@@ -1,0 +1,29 @@
+services:
+  api-client:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: blender-dep-client
+    ports:
+      - "${PORT:-13005}:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=3000
+      # API Configuration
+      - API_BASE_URL=${API_BASE_URL}
+      - API_ENVIRONMENT=${API_ENVIRONMENT:-dev}
+      - API_CLIENT_ID=${API_CLIENT_ID}
+      - API_CLIENT_SECRET=${API_CLIENT_SECRET}
+      # Logging Configuration
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    volumes:
+      - ./logs:/app/logs
+      # Mount the .env file for development
+      - ./.env:/app/.env:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped 
