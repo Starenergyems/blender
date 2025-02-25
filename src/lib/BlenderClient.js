@@ -111,6 +111,12 @@ class BlenderClient {
     if (!from || !to) {
       throw new Error('Both from and to dates are required');
     }
+
+    // Check for timezone presence (must end with +HH:MM or -HH:MM)
+    const timezoneRegex = /.*[+-]\d{2}:\d{2}$/;
+    if (!timezoneRegex.test(from) || !timezoneRegex.test(to)) {
+      throw new Error('Timezone is required in format +HH:MM or -HH:MM');
+    }
     
     const fromDate = new Date(from);
     const toDate = new Date(to);

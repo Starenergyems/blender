@@ -18,6 +18,7 @@ services:
       - LOG_LEVEL=${LOG_LEVEL:-info}
     volumes:
       - ./logs:/app/logs
+      - ./src/lib/BlenderClient.js:/app/src/lib/BlenderClient.js
       # Mount the .env file for development
       - ./.env:/app/.env:ro
     healthcheck:
