@@ -97,13 +97,19 @@ app.get('/api/collect', async (req, res) => {
       resources: req.query.resources ? req.query.resources.split(',') : undefined,
       attributes: req.query.attributes ? req.query.attributes.split(',') : undefined,
       tenantIds: req.query.tenantIds ? req.query.tenantIds.split(',') : undefined,
-      dataType1: req.query.dataType1 ? parseInt(req.query.dataType1) : undefined
+      dataType1: req.query.dataType1 // Keep as string, don't parse
     };
 
     client.validateDateRange(params.from, params.to);
     client.validateCycle(params.cycle);
-    client.validateDataType1(params.dataType1);
-    client.validateCycleTimePeriod(params.cycle, params.from, params.to);
+    if (params.dataType1) {
+      client.validateDataType1(params.dataType1);
+    }
+    
+    // Parse dates for cycle time period validation
+    const fromDate = new Date(params.from);
+    const toDate = new Date(params.to);
+    client.validateCycleTimePeriod(params.cycle, fromDate, toDate);
     
     const data = await client.getCollectData(params);
     res.json(data);

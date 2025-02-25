@@ -48,6 +48,15 @@ run_test "Plan data with invalid date range (to before from)" \
 run_test "Plan data with invalid intervalType" \
     "curl -s '${BASE_URL}/api/plan?from=2024-02-25T00:00:00%2B09:00&to=2024-02-25T01:00:00%2B09:00&intervalType=3' | json_pp"
 
+run_test "Plan data exceeding time period (intervalType 0: >2 hours)" \
+    "curl -s '${BASE_URL}/api/plan?from=2024-02-25T00:00:00%2B09:00&to=2024-02-25T03:00:00%2B09:00&intervalType=0' | json_pp"
+
+run_test "Plan data exceeding time period (intervalType 1: >2 days)" \
+    "curl -s '${BASE_URL}/api/plan?from=2024-02-25T00:00:00%2B09:00&to=2024-02-28T00:00:00%2B09:00&intervalType=1' | json_pp"
+
+run_test "Plan data exceeding time period (intervalType 2: >2 months)" \
+    "curl -s '${BASE_URL}/api/plan?from=2024-02-25T00:00:00%2B09:00&to=2024-05-25T00:00:00%2B09:00&intervalType=2' | json_pp"
+
 run_test "Plan data with missing timezone" \
     "curl -s '${BASE_URL}/api/plan?from=2024-02-25T00:00:00&to=2024-02-25T01:00:00%2B09:00&intervalType=1' | json_pp"
 
@@ -120,7 +129,7 @@ run_test "Create collect data with multiple values" \
     -H 'Content-Type: application/json' \
     -d '{
         \"cycle\": 2,
-        \"dataType1\": 5,
+        \"dataType1\": \"5\",
         \"resources\": [{
             \"resourceId\": \"resource1\",
             \"attributes\": [{
@@ -162,7 +171,7 @@ run_test "Create collect data with future date beyond limit" \
             \"attributes\": [{
                 \"attribute\": \"310001\",
                 \"values\": [{
-                    \"datetime\": \"2025-02-25T00:00:00+09:00\",
+                    \"datetime\": \"2026-02-25T00:00:00+09:00\",
                     \"value\": \"123.45\"
                 }]
             }]

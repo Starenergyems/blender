@@ -88,6 +88,9 @@ class BlenderClient {
       // Validate intervalType
       this.validateIntervalType(parseInt(params.intervalType));
 
+      // Validate time period for intervalType
+      this.validateIntervalTimePeriod(parseInt(params.intervalType), params.from, params.to);
+
       const response = await this.client.get('/data/plan', { params });
       return response.data;
     } catch (error) {
@@ -236,10 +239,16 @@ class BlenderClient {
 
   // Helper method to validate dataType1
   validateDataType1(dataType1) {
-    const validTypes = [5, 6, 7, 8];
-    if (dataType1 && !validTypes.includes(dataType1)) {
-      throw new Error('Invalid dataType1. Must be one of: ' + validTypes.join(', ') + 
-        ' (5:Actual Value, 6:Received Data, 7:Processed Data, 8:Forecast)');
+    const validTypes = ["5", "6", "7", "8"];
+    if (dataType1) {
+      // Ensure dataType1 is a string
+      if (typeof dataType1 !== 'string') {
+        throw new Error('dataType1 must be a string');
+      }
+      if (!validTypes.includes(dataType1)) {
+        throw new Error('Invalid dataType1. Must be one of: ' + validTypes.join(', ') + 
+          ' (5:Actual Value, 6:Received Data, 7:Processed Data, 8:Forecast)');
+      }
     }
   }
 
@@ -260,12 +269,22 @@ class BlenderClient {
       this.validateDataType1(attr.dataType1);
     }
 
-    // Validate dataType2 and dataType3 (max length 64 if present)
-    if (attr.dataType2 && attr.dataType2.length > 64) {
-      throw new Error('dataType2 maximum length is 64 characters');
+    // Validate dataType2 and dataType3 (must be strings with max length 64 if present)
+    if (attr.dataType2) {
+      if (typeof attr.dataType2 !== 'string') {
+        throw new Error('dataType2 must be a string');
+      }
+      if (attr.dataType2.length > 64) {
+        throw new Error('dataType2 maximum length is 64 characters');
+      }
     }
-    if (attr.dataType3 && attr.dataType3.length > 64) {
-      throw new Error('dataType3 maximum length is 64 characters');
+    if (attr.dataType3) {
+      if (typeof attr.dataType3 !== 'string') {
+        throw new Error('dataType3 must be a string');
+      }
+      if (attr.dataType3.length > 64) {
+        throw new Error('dataType3 maximum length is 64 characters');
+      }
     }
 
     // Validate values array is not empty
@@ -290,6 +309,23 @@ class BlenderClient {
 
     if (diffHours > maxPeriods[cycle]) {
       throw new Error(`For cycle ${cycle}, maximum time period is ${maxPeriods[cycle]} hours`);
+    }
+  }
+
+  // Helper method to validate time period based on intervalType
+  validateIntervalTimePeriod(intervalType, from, to) {
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+    const diffHours = (toDate - fromDate) / (1000 * 60 * 60);
+
+    const maxPeriods = {
+      0: 2,      // Command value: 2 hours
+      1: 48,     // 1-minute plan: 2 days
+      2: 1440    // 30-minute plan: 2 months
+    };
+
+    if (diffHours > maxPeriods[intervalType]) {
+      throw new Error(`For intervalType ${intervalType}, maximum time period is ${maxPeriods[intervalType]} hours`);
     }
   }
 }

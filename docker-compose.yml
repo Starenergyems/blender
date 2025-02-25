@@ -19,7 +19,7 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./src/lib/BlenderClient.js:/app/src/lib/BlenderClient.js
-      # Mount the .env file for development
+      - ./src/index.js:/app/src/index.js
       - ./.env:/app/.env:ro
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
